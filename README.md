@@ -1,125 +1,460 @@
-# VetPay Automated Outbound Call Agent
+# PetConnect Voice Outreach Platform
 
-An enterprise-ready FastAPI-based automated outbound calling system designed to contact pet owners regarding payment updates. The system initiates calls based on loaded CSV records, plays personalized recordings using ElevenLabs TTS, monitors call responses via Twilio Interactive Voice Response (IVR), and connects interested callers directly to human agents.
+An enterprise-grade AI-powered outbound voice communication platform built with FastAPI for veterinary clinics, pet insurance providers, and animal healthcare organizations. The platform automates personalized outbound phone campaigns, generates natural speech using ElevenLabs, manages Twilio Voice workflows, tracks customer interactions, and seamlessly transfers qualified callers to live support representatives.
 
 ---
 
-## 🏗 System Architecture & Topology
+# 🏗 System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Client
-        Browser[Dashboard Frontend]
+
+    subgraph Users
+        Admin[Web Administration Dashboard]
     end
-    subgraph Proxy Layer
+
+    subgraph Gateway
         Nginx[Nginx Reverse Proxy]
     end
-    subgraph Application Tier
-        FastAPI[FastAPI Server]
-        SQLite[(SQLite DB)]
-    end
-    subgraph Third-Party integrations
-        ElevenLabs[ElevenLabs TTS API]
-        Twilio[Twilio Voice Engine]
+
+    subgraph Core Platform
+        FastAPI[FastAPI Application]
+        SQLite[(SQLite Database)]
+        Audio[(Shared Audio Storage)]
     end
 
-    Browser -->|HTTP Requests| Nginx
-    Nginx -->|Proxy Pass / Port 8000| FastAPI
-    Nginx -->|Static Cache| AudioFiles[(Shared Audio Volume)]
+    subgraph External Services
+        ElevenLabs[ElevenLabs Text-To-Speech]
+        Twilio[Twilio Programmable Voice]
+    end
+
+    Admin -->|HTTPS| Nginx
+
+    Nginx -->|Reverse Proxy| FastAPI
+    Nginx -->|Serve Static Audio| Audio
+
     FastAPI --> SQLite
-    FastAPI -->|REST API requests| ElevenLabs
-    FastAPI -->|Initiate Calls| Twilio
-    Twilio -->|IVR / Status Webhooks| Nginx
-    FastAPI <-->|Write/Read Audio| AudioFiles
+    FastAPI --> Audio
+
+    FastAPI -->|Generate Voice| ElevenLabs
+    FastAPI -->|Create Calls| Twilio
+
+    Twilio -->|Webhook Events| Nginx
 ```
 
 ---
 
-## 🛠 Tech Stack
+# 🚀 Platform Overview
 
-* **Runtime & Framework**: Python 3.11, FastAPI, Uvicorn
-* **Telephony Infrastructure**: Twilio REST API + TwiML (XML) Interactive Responses
-* **Audio Generation**: ElevenLabs Text-to-Speech API
-* **Security & Auth**: HTTP-Only JWT Cookies, bcrypt Password Hashing
-* **Data Storage**: SQLite (Auth storage), JSON/CSV (Call logging persistence)
-* **Web Server & Routing**: Nginx (Reverse Proxy & static audio file streaming)
-* **Containerization**: Docker, multi-stage Dockerfiles, Docker Compose
+The PetConnect Voice Outreach Platform automates outbound phone campaigns by combining AI speech synthesis, telephony automation, and administrator workflow management into a single production-ready application.
+
+The platform enables organizations to:
+
+- Import customer contact records from CSV files
+- Generate personalized voice recordings using AI
+- Automatically place outbound phone calls
+- Handle IVR interactions
+- Connect interested callers to live agents
+- Record call outcomes
+- Export campaign reports
+
+The solution is optimized for veterinary payment reminders, insurance follow-ups, appointment confirmations, customer notifications, and other outbound communication workflows.
 
 ---
 
-## 📂 Folder Structure
+# ✨ Core Features
+
+## AI Voice Generation
+
+- ElevenLabs Text-to-Speech integration
+- Dynamic personalized messages
+- Audio caching
+- Automatic voice reuse
+- High-quality MP3 generation
+
+---
+
+## Automated Calling
+
+- Twilio Programmable Voice
+- Bulk outbound dialing
+- Campaign execution
+- Personalized greetings
+- Automatic retry workflow
+- Live status tracking
+
+---
+
+## Interactive Voice Response (IVR)
+
+- DTMF keypad handling
+- Transfer interested callers
+- Custom voice prompts
+- Call branching
+- Call completion tracking
+
+---
+
+## Campaign Management
+
+- CSV import
+- Batch processing
+- Campaign execution
+- Result exports
+- Call history
+- Progress monitoring
+
+---
+
+## Secure Administration
+
+- JWT Authentication
+- Secure cookies
+- Password hashing
+- Session management
+- Administrator dashboard
+
+---
+
+# 🛠 Technology Stack
+
+## Backend
+
+- Python 3.11
+- FastAPI
+- Uvicorn
+
+## Database
+
+- SQLite
+
+## Authentication
+
+- JWT
+- bcrypt
+
+## Telephony
+
+- Twilio Voice API
+- TwiML
+
+## AI Services
+
+- ElevenLabs Text-to-Speech
+
+## Reverse Proxy
+
+- Nginx
+
+## Storage
+
+- CSV
+- JSON
+- Local Audio Cache
+
+## Containerization
+
+- Docker
+- Docker Compose
+
+---
+
+# 📂 Project Structure
 
 ```text
-vetpay-outbound-dialer/
+petconnect-voice-platform/
+
 ├── ai-codebase/
-│   ├── audio/                  # Cached MP3 audio assets (mounted volume)
-│   ├── output_results/         # Final parsed call result CSVs
-│   ├── config.py               # Application configuration parser
-│   ├── main.py                 # Core FastAPI backend, routing, and task loops
-│   ├── index.html              # Administrator Control Panel
-│   ├── login.html              # Gateway Page
-│   ├── .env.example            # Environment template config
-│   ├── Dockerfile              # Multi-stage production container image config
-│   └── docker-entrypoint.sh    # Pre-flight environment check script
+│
+├── audio/
+│   ├── Cached AI generated voice files
+│
+├── output_results/
+│   ├── Campaign reports
+│
+├── config.py
+├── main.py
+├── login.html
+├── index.html
+├── Dockerfile
+├── docker-entrypoint.sh
+├── .env.example
+│
 ├── nginx/
-│   └── nginx.conf              # Reverse proxy configuration rules
-├── docker-compose.yml          # Core service composition structure
-├── docker-compose.dev.yml      # Local hot-reloading configurations
-├── docker-compose.prod.yml     # Production scaling configurations
-└── README.md                   # System configuration overview
+│   └── nginx.conf
+│
+├── docker-compose.yml
+├── docker-compose.dev.yml
+├── docker-compose.prod.yml
+│
+└── README.md
 ```
 
 ---
 
-## 🚀 Installation & Local Execution
+# ⚙ System Components
 
-### Prerequisites
-* Docker & Docker Compose installed
-* Twilio Account credentials
-* ElevenLabs API key
+## FastAPI Application
 
-### Quick Start with Docker
-1. Navigate to the project root directory.
-2. Duplicate the environment template and name it `.env` inside `ai-codebase/`:
-   ```bash
-   cp ai-codebase/.env.example ai-codebase/.env
-   ```
-3. Populate all variables in the newly created `.env` file (e.g. `TWILIO_ACCOUNT_SID`, `ELEVENLABS_API_KEY`, etc.).
-4. Start the environment using Docker Compose:
-   ```bash
-   docker compose up --build -d
-   ```
-5. Once healthy, the application dashboard will be exposed at: `http://localhost/`
+Responsible for:
+
+- Authentication
+- Campaign execution
+- CSV parsing
+- Audio generation
+- Twilio integration
+- Reporting
+- REST API
+- Dashboard backend
 
 ---
 
-## ⚙️ Environment Configurations
+## Nginx
 
-| Environment Variable | Description | Required | Default |
-| :--- | :--- | :--- | :--- |
-| `TWILIO_ACCOUNT_SID` | Your Twilio Account unique identifier | Yes | N/A |
-| `TWILIO_AUTH_TOKEN` | Your Twilio Account access secret | Yes | N/A |
-| `TWILIO_PHONE_NUMBER` | Outbound calling sender ID | Yes | N/A |
-| `ELEVENLABS_API_KEY` | ElevenLabs developer API access key | Yes | N/A |
-| `ELEVENLABS_VOICE_ID` | Voice profile ID for speech synthesis | No | `snyKKuaGYk1VUEh42zbW` |
-| `BASE_URL` | Public callback HTTPS URL of the server | Yes | N/A |
-| `HUMAN_AGENT_NUMBER` | Destination agent number for transfers | Yes | N/A |
-| `COMMON_MESSAGE_TEXT` | Global message content played to calls | Yes | N/A |
-| `JWT_SECRET_KEY` | Symmetric secret key for signing JWTs | Yes | N/A |
+Responsible for:
+
+- Reverse proxy
+- SSL termination
+- Audio streaming
+- Static asset delivery
+- Security headers
 
 ---
 
-## 🛡 Security Hardening & Best Practices
+## SQLite Database
 
-1. **Non-Root Execution**: The FastAPI process inside the container runs under a customized user UID/GID (`vetpay:vetpay`), defending against runtime host file manipulation.
-2. **HTTP-Only Cookies**: JWT tokens are sealed with `httponly=True` and `samesite=lax` settings to block client-side reading by cross-site scripts.
-3. **Nginx Security Headers**: Default reverse proxy rules declare security headers including:
-   * `X-Frame-Options: SAMEORIGIN` (prevents clickjacking)
-   * `X-Content-Type-Options: nosniff`
-   * `Content-Security-Policy`
+Stores:
+
+- Administrator accounts
+- Authentication information
+- Session data
 
 ---
 
-## 📈 Performance & Scaling
-* **Volume Streaming Optimization**: Nginx bypasses the FastAPI app entirely when serving audio file resources (`/audio/`), streaming cached MP3 files directly from the shared volume.
-* **Worker Execution Topology**: Sequential queue processing is managed single-threaded to adhere to Twilio API rate constraints and avoid simultaneous concurrency blocks.
+## Audio Cache
+
+Stores:
+
+- Generated MP3 files
+- Cached personalized messages
+
+---
+
+# 🚀 Quick Start
+
+## Prerequisites
+
+Install:
+
+- Docker
+- Docker Compose
+
+Obtain:
+
+- Twilio Account
+- ElevenLabs API Key
+
+---
+
+## Clone Repository
+
+```bash
+git clone https://github.com/your-company/petconnect-voice-platform.git
+
+cd petconnect-voice-platform
+```
+
+---
+
+## Configure Environment
+
+Copy the template
+
+```bash
+cp ai-codebase/.env.example ai-codebase/.env
+```
+
+Update all required environment variables.
+
+---
+
+## Build
+
+```bash
+docker compose build
+```
+
+---
+
+## Start Services
+
+```bash
+docker compose up -d
+```
+
+---
+
+## Stop Services
+
+```bash
+docker compose down
+```
+
+---
+
+## View Logs
+
+```bash
+docker compose logs -f
+```
+
+---
+
+## Access Dashboard
+
+```
+http://localhost
+```
+
+---
+
+# 🌍 Environment Variables
+
+| Variable | Description | Required |
+|------------|-------------|----------|
+| TWILIO_ACCOUNT_SID | Twilio Account SID | ✅ |
+| TWILIO_AUTH_TOKEN | Twilio Auth Token | ✅ |
+| TWILIO_PHONE_NUMBER | Outbound Phone Number | ✅ |
+| ELEVENLABS_API_KEY | ElevenLabs API Key | ✅ |
+| ELEVENLABS_VOICE_ID | Voice Profile | No |
+| BASE_URL | Public HTTPS URL | ✅ |
+| HUMAN_AGENT_NUMBER | Transfer Destination | ✅ |
+| COMMON_MESSAGE_TEXT | Default Voice Message | ✅ |
+| JWT_SECRET_KEY | JWT Signing Secret | ✅ |
+
+---
+
+# 🔄 Call Processing Workflow
+
+```text
+Import CSV
+      │
+      ▼
+Generate Personalized Message
+      │
+      ▼
+Generate AI Audio
+      │
+      ▼
+Cache Audio
+      │
+      ▼
+Initiate Twilio Call
+      │
+      ▼
+Customer Answers
+      │
+      ▼
+Play Recording
+      │
+      ▼
+Wait for IVR Input
+      │
+      ├────────► Transfer to Agent
+      │
+      └────────► Complete Call
+      │
+      ▼
+Save Results
+      │
+      ▼
+Export Reports
+```
+
+---
+
+# 🔒 Security
+
+The platform incorporates multiple layers of security suitable for production deployments.
+
+### Authentication
+
+- JWT authentication
+- HTTP-only cookies
+- Secure session handling
+- Password hashing using bcrypt
+
+---
+
+### Container Security
+
+- Non-root container execution
+- Isolated Docker network
+- Environment variable separation
+
+---
+
+### Reverse Proxy Security
+
+Configured Nginx security headers include:
+
+- X-Frame-Options
+- X-Content-Type-Options
+- Referrer-Policy
+- Content-Security-Policy
+
+---
+
+# 📊 Performance Optimizations
+
+## Audio Caching
+
+Generated AI audio files are cached locally, preventing repeated requests to ElevenLabs and reducing API usage.
+
+---
+
+## Static File Delivery
+
+Nginx serves audio assets directly without routing through FastAPI, minimizing latency and reducing backend workload.
+
+---
+
+## Sequential Campaign Processing
+
+Outbound calls are processed sequentially to:
+
+- Respect Twilio API rate limits
+- Improve delivery reliability
+- Prevent excessive concurrent connections
+
+---
+
+# 📈 Production Deployment
+
+The project includes:
+
+- Multi-stage Docker images
+- Production Docker Compose configuration
+- Development Docker Compose configuration
+- Nginx reverse proxy
+- Environment-based configuration
+- Shared persistent audio volume
+
+---
+
+# 📋 Typical Use Cases
+
+- Veterinary payment reminders
+- Pet insurance notifications
+- Appointment confirmations
+- Membership renewals
+- Billing follow-ups
+- Customer engagement campaigns
+- Automated reminder calls
+- Service renewal notifications
+
+---
+
+# 📄 License
+
+This project is intended for enterprise deployment and internal organizational use. Customize licensing terms according to your organization's requirements.
