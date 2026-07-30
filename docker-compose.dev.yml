@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# docker-compose.dev.yml
+# Development overrides — live reload, direct port access, no nginx.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  vetpay-app:
+    build:
+      context: ./ai-codebase
+      dockerfile: Dockerfile
+    # Override CMD to enable hot-reload
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount source code live for hot-reload
+      - ./ai-codebase:/app
+      # Still persist audio and results
+      - vetpay-audio:/app/audio
+      - vetpay-results:/app/output_results
+      - vetpay-db:/app/users.db
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+
+  # Disable nginx in development — access app directly on port 8000
+  vetpay-nginx:
+    profiles:
+      - nginx  # Only starts if you explicitly use --profile nginx

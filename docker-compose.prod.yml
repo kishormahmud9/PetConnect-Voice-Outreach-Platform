@@ -1,0 +1,40 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# docker-compose.prod.yml
+# Production overrides — hardened settings, no source-code mounts.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  vetpay-app:
+    # In production, always use an explicit pinned image tag
+    # build is still available but 'image' overrides for registry-based deploys
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+
+  vetpay-nginx:
+    restart: always
+    # In production, expose only HTTPS (443) — HTTP only for ACME challenge
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - vetpay-audio:/app/audio:ro
+      # Mount Let's Encrypt certificates
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M

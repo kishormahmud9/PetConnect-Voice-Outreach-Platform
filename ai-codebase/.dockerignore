@@ -1,0 +1,68 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .dockerignore
+# Excludes files that should never be copied into the Docker image.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Python runtime artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment files with real secrets
+.env
+*.env
+!.env.example
+
+# Database files (regenerated at startup)
+users.db
+
+# Generated audio files (regenerated at startup)
+audio/
+
+# Output result CSV files (runtime data)
+output_results/
+
+# Uploaded contact CSVs (runtime data)
+contacts.csv
+call_results.json
+
+# Development/test files
+record.mp3
+customer.csv
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE & editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker Compose dev overrides
+docker-compose.dev.yml
+docker-compose.override.yml
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
